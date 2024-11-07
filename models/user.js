@@ -14,7 +14,11 @@ const userSchema = mongoose.Schema(
                 type : mongoose.Schema.Types.ObjectId,
                 ref : 'post'
             }
-        ]
+        ],
+        profilepic:{
+            type : String,
+            default : "default.jpg"
+        }
     }
 )
 

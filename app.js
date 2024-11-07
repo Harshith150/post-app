@@ -6,13 +6,19 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require("bcrypt")
 const morgan = require("morgan")
 require("dotenv").config()
+const crypto = require("crypto")
 const app = express()
+const path = require("path")
+const multerconfig = require("./config/multerconfig")
+const upload = require("./config/multerconfig")
 
 app.set('view engine','ejs')
 app.use(morgan('dev'))
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser())
+app.use(express.static(path.join(__dirname,'public')))
+
 
 async function isLoggedIn(req,res,next)
 {
@@ -30,6 +36,8 @@ async function isLoggedIn(req,res,next)
         next()
     }
 }
+
+
 
 app.get('/',(req,res)=>{
     res.render('index')
@@ -92,6 +100,19 @@ app.get('/profile',isLoggedIn, async (req,res)=>{
     let user = await userModel.findOne({email:req.user.email}).populate('posts')
     console.log(user)
     res.render('profile',{user:user})
+})
+
+app.get('/profile/upload',isLoggedIn,async (req,res)=>{
+    res.render('profileupload')
+})
+
+app.post('/upload',isLoggedIn,upload.single('image'), async (req,res)=>{
+    console.log(req.file)
+    let user = await userModel.findOneAndUpdate({email : req.user.email,_id : req.user._id})
+    user.profilepic = req.file.filename
+    await user.save()
+    res.redirect("/profile")
+
 })
 
 app.post('/post', isLoggedIn, async (req, res) => {
